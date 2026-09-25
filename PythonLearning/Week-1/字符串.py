@@ -48,3 +48,16 @@ print("Python".startswith("Py"))# True
 print("Python".endswith("on"))  # True
 print("Python".find("th"))      # 2  找不到返回 -1
 print(len("Python"))            # 6  长度
+print(ord('A'))                 # 65 ord()可以将字符转换为它对应的Unicode编码
+print((chr(65)))                # 'A'，作用与ord()相反
+
+# 5.占位符% %s(占位字符) %d(占位整数)等
+print("Hello,%s"%'world')       # Hello,world
+print("Hi, %s, you have $%d." % ('Michael', 1000000))       # 'Hi, Michael, you have $1000000.'
+print("%2d-%02d" % (3, 1))              #  3-01  %2d表示占两位，%02d表示占两位添一个0
+print("%.2f" % 3.1415926)               # 3.14  .2f表示保留小数点后两位
+# 注意 %s可以将所有数据类型转换为字符串
+print("age: %s,gender: %s" %(18 , True))
+
+# format(),会将format()数据传入{0},{1}…………中
+print("Hello, {0}, 成绩提升了 {1:.1f}%".format('小明', 17.125))         # 'Hello, 小明, 成绩提升了 17.1%'
