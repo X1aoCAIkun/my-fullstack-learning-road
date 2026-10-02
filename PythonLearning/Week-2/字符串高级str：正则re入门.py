@@ -3,7 +3,7 @@ import re       # re是第三方库需要导入
 
 
 text = "我的电话是13800138000，他的电话是13912345678"
-phones = re.findall(r"1[3-9]\d{9}", text)
+phones = re.findall(r"1[3-9]\d{9}", text)     # findall是将每个匹配结果组合成一个列表
 print(phones)           # ['13800138000', '12912345678']
 
 # 常用元字符(通配符属于元字符)
