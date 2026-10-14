@@ -1,0 +1,39 @@
+{
+  "books": [
+    {
+      "book_id": 1,
+      "name": "python程序设计",
+      "author": "张三",
+      "stock": 1
+    },
+    {
+      "book_id": 2,
+      "name": "计算机网络",
+      "author": "李四",
+      "stock": 0
+    },
+    {
+      "book_id": 3,
+      "name": "数据结构与算法",
+      "author": "王五",
+      "stock": 3
+    },
+    {
+      "book_id": 4,
+      "name": "操作系统原理",
+      "author": "赵六",
+      "stock": 0
+    }
+  ],
+  "records": [
+    {
+      "record_id": 1,
+      "stu_name": "小红",
+      "borrow_id": [
+        1,
+        2
+      ],
+      "borrow_date": "2026-10-14"
+    }
+  ]
+}

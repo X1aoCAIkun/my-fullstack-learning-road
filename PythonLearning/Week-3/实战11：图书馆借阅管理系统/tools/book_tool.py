@@ -6,8 +6,6 @@ def init_book_file(file_path: Path):
     if not file_path.exists():
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump({"books": [], "records": []}, f, ensure_ascii=False, indent=2)
-    else:
-        return
 
 # 添加书籍
 def add_book(file_path: Path, name: str, author: str, stock: int):
@@ -20,7 +18,7 @@ def add_book(file_path: Path, name: str, author: str, stock: int):
     if not book_list:
         new_book_id = 1
     else:
-        new_book_id = book_list[-1]["book_id"]
+        new_book_id = book_list[-1]["book_id"] + 1
     book_list.append({"book_id": new_book_id, "name": name, "author": author, "stock": stock})
 
    # 将更新记录添加到json文件
@@ -36,17 +34,22 @@ def borrow_operation(file_path: Path, stu_name: str, borrow_id_list: list, borro
     
     book_list = data["books"]
     record_list = data["records"]
+    borrow_id = []
     # 只有匹配到对应id且库存大0才可以借阅
     for id in borrow_id_list:
         for item in book_list:
             if id == item["book_id"] and item["stock"] > 0:
-                # record_list为空则添加起始id:1，存在则id为最大id加1
-                if not record_list:
-                    new_record_id = 1
-                else:
-                    new_record_id = record_list[-1]["record_id"]
-                record_list.append({"record_id": new_record_id, "stu_name": stu_name, "borrow_books_id": borrow_id_list, "borrow_date": borrow_date})
                 item["stock"] -= 1
+                borrow_id.append(id)
+                break
+    if borrow_id:
+        # record_list为空则添加起始id:1，存在则id为最大id加1
+        if not record_list:
+            new_record_id = 1
+        else:
+            new_record_id = record_list[-1]["record_id"] + 1
+        record_list.append({"record_id": new_record_id, "stu_name": stu_name, "borrow_id": borrow_id, "borrow_date": borrow_date})
+
     # 保存数据
     new_data = {"books": book_list, "records": record_list}
     with open(file_path, "w", encoding="utf-8") as f:
