@@ -15,6 +15,7 @@ def calc_score_stat(stu_list: list) -> dict:
     scores = [stu["score"] for stu in stu_list]
 
     score_dict["总分"] = sum(scores)
+    # 使用round()保留两位小数
     score_dict["平均分"] = round(sum(scores) / len(scores), 2)
     score_dict["最高分"] = max(scores)
     score_dict["最低分"] = min(scores)
