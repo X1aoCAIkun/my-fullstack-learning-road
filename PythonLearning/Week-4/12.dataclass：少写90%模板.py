@@ -11,7 +11,7 @@ class Point:
 
 p1 = Point(1, 2)
 p2 = Point(1, 2)            # 二者自动调用__init__
-print(p1)           # Point(1, 2)   自动调用__repr__
+print(p1)               # Point(x=1, y=2)   自动调用__repr__ 注意这里输出会关键字注明值            
 print(p1 == p2)     # True   自动调用__eq__
 
 
