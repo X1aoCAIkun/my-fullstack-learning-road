@@ -23,6 +23,7 @@ class Vector:
     def __getitem__(self, i):
         return (self.x, self.y)[i]          # ()就像tuple，[]就像下标
 
+    # 使对象可以像函数一样被调用
     def __call__(self, scale):
         return Vector(self.x * scale, self.y * scale)
 
@@ -31,4 +32,5 @@ print(v1 + v2)          # Vector(4, 6) 这里的+会自动隐式调用__add__
 print(v1 == Vector(1, 2))       # True 这里的==会自动隐式调用__eq__
 print(len(v1))          # 2 len()会自动隐式调用__len__
 print(v1[0], v1[1])         # 1 2  这里会自动隐式调用__getitem__
+# 对象像函数一样调用
 print(v1(10))        # Vector(10, 20)  这里会隐式调用__call__ 
