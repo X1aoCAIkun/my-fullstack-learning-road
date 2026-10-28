@@ -71,6 +71,7 @@ def fib(n):
 def square(*, s):
     return s * s
 
+print(fib(4))
 print(fib(20))          # 计算 + 缓存，fib再次调用即从cache读
 print(square(s=5))
 print(square(s="x"))        # 抛出异常
