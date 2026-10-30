@@ -33,6 +33,25 @@
 # 自测:hit() 得到 1,再 hit() 得到 2,miss() 得到 0,再 hit() 得到 1。
 #       (自测完记得 miss() 一下清零,不然连击数会被带进后面的对战)
 
+def make_combo_tracker():
+    """计算连击次数"""
+    count = 0
+    def hit():
+        """连击持续"""
+        nonlocal count
+        count += 1
+        return count
+    def miss():
+        """连击中断"""
+        nonlocal count
+        count = 0
+        return count
+    return hit, miss
+
+hit, miss = make_combo_tracker()
+print(hit())        # 1
+print(hit())        # 2
+print(miss())       # 0
 
 
 # ---------- 任务2:@lru_cache · 连击奖励 ----------
@@ -42,6 +61,17 @@
 # 想一想:为什么这里 hits 很可能是 0?            因为这里的每个bonus(n)都只会被计算一次
 #        (对比斐波那契——bonus 的递归每个 n 只被算一次,没有重复计算)
 
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def bonus(n):
+    """计算连击加成"""
+    if n == 0:
+        return 0
+    return bonus(n-1) + 5
+
+print(bonus(50))
+print(bonus.cache_info())
 
 
 # ---------- 任务3:自定义异常体系 ----------
@@ -53,6 +83,14 @@
 # 想一想:为什么三个子类都要继承 BattleError 而不是直接继承 Exception?       后续就只要一个except就可以捕获这这三种异常
 #        (提示:主流程里可以 except BattleError 一网打尽)
 
+class BattleError(Exception):
+    """战斗系统异常基类"""
+class NotEnoughManaError(BattleError):
+    """蓝量不足"""
+class SkillOnCooldownError(BattleError):
+    """技能冷却中"""
+class InvalidSkillError(BattleError):
+    """技能编号不存在"""
 
 
 # ---------- 任务4:partial · 三个技能 ----------
@@ -69,6 +107,31 @@
 # 自测:fireball(mana=100) 得到 (30, 90);
 #       fireball(mana=5) 应抛出 NotEnoughManaError(用 try 接住验证)
 
+from functools import partial
+
+def cast_skill(name, base_damage, mana_cost, mana):
+    """
+    :name: 技能名称
+    :base_damage: 技能基础伤害
+    :mana_cost: 技能耗蓝量
+    :mana: 人物初始蓝量
+    """
+    if mana < mana_cost:
+        raise NotEnoughManaError(f"技能 {name} 需要蓝量：{mana_cost} 现有蓝量：{mana}")
+    else:
+        return (base_damage, mana - mana_cost)
+
+
+# 用两种形式构建技能函数（其他属性固定，mana后续调用技能时传入）
+fireball = partial(cast_skill, name="火球术", base_damage=30, mana_cost=10)
+ice_arrow = partial(cast_skill, "冰箭术", 20, 5)
+
+print(fireball(mana=100))
+try:
+    print(fireball(mana=5))
+except NotEnoughManaError as n:
+    print("出现异常：", n)
+
 
 # ---------- 任务5:带参数的装饰器 · 技能冷却 ----------
 # 写 cooldown(seconds, label="技能"),返回装饰器,要求:
@@ -80,6 +143,42 @@
 # 自测:连续调 thunder(mana=100) 两次,第二次应抛 SkillOnCooldownError;
 #       time.sleep(2) 后再调,应成功。
 
+import time
+
+def cooldown(seconds, label="技能"):
+    """
+    :seconds: 技能的冷却时间 
+    :label: 执行冷却的技能名称
+    """
+    start = 0       # 上次使用技能的时间，初始为0
+    def deco(fn):
+        """
+        :fn: 技能函数
+        """
+        def wrapper(*arg, **kwargs):
+            nonlocal start
+            now = time.perf_counter()       # 记录当前时间
+            if now - start < seconds:
+                raise SkillOnCooldownError(f"技能 {label} 冷却中，请稍后再试")
+            else:
+                result = fn(*arg, **kwargs)     # result接收技能函数的结果
+                start = time.perf_counter()             # 更新技能释放时间
+                return result
+        return wrapper
+    return deco
+
+thunder = cooldown(2, "雷霆术")(partial(cast_skill, "雷霆术", 45, 20))
+# 技能列表（字典）
+skills = {"1": fireball, "2": ice_arrow, "3": thunder}
+
+print(thunder(mana=100))
+try:
+    print(thunder(mana=80))
+except SkillOnCooldownError as s:
+    print("出现异常：", s)
+time.sleep(2)
+print(thunder(mana=50))
+time.sleep(2)
 
 
 # ---------- 任务6:类装饰器 · 攻击统计 ----------
@@ -96,6 +195,37 @@
 # 自测:attack(ice_arrow, 100) 调两次,打印 attack.total() 应为 2,
 #       打印 attack.history 查看记录。
 
+from functools import wraps
+
+class CountCalls:
+    def __init__(self, fn):
+        wraps(fn)(self)
+        self.fn = fn        # 技能函数
+        self.history = []   # 技能使用记录
+
+    def __call__(self, *args, **kwds):
+        result = self.fn(*args, **kwds)
+        self.history.append((args, result))
+        return result
+
+    def total(self):
+        return len(self.history)
+
+@CountCalls
+def attack(skill, Mana):
+    damage_mana = skill(mana=Mana)
+    hit_count = hit()
+    bonus_num = bonus(hit_count)
+    total_damage = damage_mana[0] + bonus_num
+    print(f"连击 x{hit_count}，总伤害 {total_damage}")
+    return (total_damage, damage_mana[1])
+
+attack(ice_arrow, 100)
+attack(ice_arrow, 100)
+print(attack.total())
+print(attack.history)
+miss()
+
 
 # ---------- 任务7:上下文管理器类 · 战斗场景 ----------
 # 写类 Battle:
@@ -107,6 +237,22 @@
 # 提示:主流程里用 with Battle() as battle:,
 #      每回合把 battle.rounds 更新为当前回合数。
 
+class Battle:
+    def __enter__(self):
+        self.start = time.perf_counter()
+        self.rounds = 0         # 战斗回合数
+        print("战斗开始")
+        return self
+    def __exit__(self, exc_type, exc, tb):
+        if not exc_type:
+            print(f"战斗结束：共 {self.rounds} 回合，耗时 {time.perf_counter() - self.start:.2f}s")
+        else:
+            print(f"战斗异常中断({exc_type.__name__})，耗时 {time.perf_counter() - self.start:.2f}s")
+            
+with Battle() as b:
+    attack(fireball, 100)
+    b.rounds = 1
+miss()
 
 # ---------- 任务8:@contextmanager · 阶段日志 ----------
 # 用 @contextmanager 写 stage(name):
@@ -115,6 +261,21 @@
 # 可选加分:用一个全局变量 depth 控制缩进(进入 +1,退出 -1),
 #           这样嵌套的 stage 日志会像树一样一层层缩进。
 
+from contextlib import contextmanager
+
+depth = 0
+
+@contextmanager
+def stage(name):
+    global depth
+    print("  " * depth + f">>> 进入 {name}")
+    depth += 1
+    try:
+        yield
+    finally:
+        depth -= 1
+        print("  " * depth + f"<<< 退出 {name}")
+
 
 # ---------- 任务9:异常链 · 规则加载 ----------
 # 写 load_rules(path):
@@ -122,6 +283,18 @@
 #   2. 捕获 ValueError 后 raise BattleError("规则文件解析失败") from e
 # 外层 try 捕获 BattleError,打印 "规则加载失败,使用默认规则" 和 e.__cause__,
 # 让程序能继续往下走。
+
+def load_rules(path):
+    try:
+        int(path)
+    except ValueError as v:
+        raise BattleError("规则文件解析失败") from v
+
+try:
+    load_rules("a")
+except BattleError as b:
+    print("规则加载失败，使用默认规则")
+    print(b.__cause__)
 
 
 # ---------- 主流程:把一切组装起来 ----------
@@ -172,3 +345,48 @@
 #   [ ] 回合出错时,"<<< 退出"仍先于 except 打印(清理先于处理)
 #   [ ] 战斗结束打印总回合数、耗时、技能释放总次数
 # ============================================================
+
+import random
+
+dummy_hp = 100; MANA = 60
+
+# 战斗前清理数据
+miss()
+attack.history.clear()
+
+with Battle() as battle:
+    while dummy_hp > 0:
+        battle.rounds += 1
+        try:
+            with stage(f"第 {battle.rounds} 回合"):
+                number = input("输入技能编号：")
+                if number not in skills:
+                    raise InvalidSkillError(f"编号 {number} 技能不存在")
+                else:
+                    damage, MANA = attack(skills[number], MANA)
+                if random.random() < 0.8:
+                    if dummy_hp -damage > 0:
+                        dummy_hp -= damage
+                    else:
+                        dummy_hp = 0
+                    print(f"攻击命中，假人剩余血量：{dummy_hp}")
+                else:
+                    miss()
+                    print("未命中，连击中断")
+        except NotEnoughManaError as n:
+            print("出现异常：", n)
+            MANA += 5
+            print("恢复5点蓝量")
+        except SkillOnCooldownError as s:
+            print("出现异常：", s)
+        except InvalidSkillError as i:
+            print("出现异常：", i)
+        except BattleError as b:
+            print("战斗错误：", b)
+        else:
+            print("回合结束")
+        finally:
+            print(f"已进行 {battle.rounds} 回合")
+
+    print("战斗胜利")
+print(f"本场共释放技能 {attack.total()} 次")            
