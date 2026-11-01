@@ -4,6 +4,8 @@ iterable(可迭代对象)；它可以“被for循环”的东西；比如：list
 
 iterator(迭代器)；真正“一个一个吐”的家伙；比如：iter([1, 2, 3])的返回值；
 关键方法：__next__()每次吐一个
+
+注意：是迭代器必然也是迭代对象
 """
 
 nums = [1, 2, 3]        # nums就是iterable，而不是iterator
