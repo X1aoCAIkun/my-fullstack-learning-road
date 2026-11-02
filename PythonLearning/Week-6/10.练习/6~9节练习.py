@@ -85,3 +85,67 @@ g.send("hi")
 g.throw(ValueError)
 g.send("hello")     # 协程还存在，hello依旧会输出
 
+# 练习5：第 9 节：itertools 组合拳
+# (a) 密码穷举：用 product 生成所有 4 位数字 PIN（0000~9999），
+# 打印总数和前 5 个。然后回答：如果要求4 位数字互不重复，
+# 该换哪个函数？总数是多少？
+from itertools import product, permutations, groupby, accumulate, islice
+
+PIN = ["".join(x) for x in product("0123456789", repeat=4)]
+print(PIN[:5])
+unique_PIN = ["".join(x) for x in permutations("0123456789", 4)]
+print(len(unique_PIN))
+
+# (b) 游程编码：用 groupby 把 "aaabbbcca" 压缩成 
+# [('a', 3), ('b', 3), ('c', 2), ('a', 1)]。
+# 注意 groupby 返回的 group 是一个迭代器
+# 想一想 len(list(group)) 里为什么必须写 list()。
+w = []
+for k, words in groupby("aaabbbcca"):
+    w.append((k, len(list(words))))
+print(w)
+# 必须些list()是因为words是一个迭代器，
+# 而且groupby迭代完，它也迭代完
+
+# (c) 阶乘累进：用 accumulate 一行算出 
+# [1, 2, 6, 24, 120]（前 5 个阶乘），
+# 提示：accumulate 的第二个参数可以传 lambda a, b: a * b。
+n = [x for x in range(1, 6)]
+print(list(accumulate(n, lambda a, b: a*b)))
+
+# (d) 预测输出——islice 的消耗性：
+it = iter(range(10))
+print(list(islice(it, 3)))      # [0, 1, 2]
+print(list(islice(it, 3)))      # [3, 4, 5] it是一个迭代器，它已经遍历到3了 
+
+
+# 题 6（实战 1 风格）：手写 my_takewhile 和 my_cycle
+# (a) 手写 my_takewhile(pred, it)：
+# 只要 pred 为真就吐，第一次为假立即停。
+def my_takewhile(pred, it):
+    for item in it:
+        if pred(item):
+            yield item
+        else:
+            return
+print(list(my_takewhile(lambda x: x < 3, [1, 2, 3, 4, 1])))   # [1, 2]
+
+# (b) 手写 my_cycle(it)：无限循环吐出一个可迭代对象的所有元素。
+# 测试（别真 list() 它，会卡死，用 islice 取前几个）：
+def my_cycle(it):
+    cache = []
+    for item in it:
+        cache.append(item)          # 边吐边存
+        yield item
+    if not cache:
+        return
+    while True:
+        yield from cache
+        
+print(list(islice(my_cycle("AB"), 5)))          # ['A', 'B', 'A', 'B', 'A']
+print(list(islice(my_cycle(iter([1, 2])), 5)))  # [1, 2, 1, 2, 1]  ← 注意传的是迭代器！
+
+# 练习7：第 6 + 9 节综合：groupby 陷阱
+# 预测输出，并解释 groupby 的分组规则：
+for k, g in groupby([1, 1, 2, 2, 1, 1]):
+    print(k, list(g))       # 1 [1, 1]  2 [2, 2]  1 [1, 1]
