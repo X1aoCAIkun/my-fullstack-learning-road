@@ -104,7 +104,7 @@ def countdown(n):
     print("end")
 
 g = countdown(2)
-print(next(g))      # 2
+print(next(g))      # start  2
 print(next(g))      # 1
 # print(next(g))   # end StopIteration
 # (c) 基于 (a) 回答：
@@ -167,7 +167,7 @@ print(list(SlidingWindow("abc", 1)))  # n = 1
 # [('a',), ('b',), ('c',)]   
 
 
-# 第七题改良版，只依赖StopIteration，且支持任意迭代器
+# 第7题改良版，只依赖StopIteration，且支持任意迭代器
 class New_SlidingWindow:
     def __init__(self, iterable, size):
         if size <= 0:
@@ -212,4 +212,35 @@ print(list(New_SlidingWindow([], 3)))      # 空输入
 # []
 
 print(list(New_SlidingWindow("abc", 1)))  # n = 1
-# [('a',), ('b',), ('c',)]   
+# [('a',), ('b',), ('c',)] 
+
+# 第7题的生成器版
+def gen_SlidingWindow(iterable, size):
+    if size <= 0:
+        raise ValueError("窗口大小必须大于0")
+    window = []
+    it = iter(iterable)
+    for _ in range(size):
+        try:
+            window.append(next(it))
+        except StopIteration:
+            return          # 凑不齐第一个窗口直接返回
+    yield tuple(window)
+    for new in it:          # 这里it迭代器已经指在了第size个元素
+        window = window[1:] + [new]
+        yield tuple(window)
+
+print(list(gen_SlidingWindow("abcdef", 3)))
+# [('a', 'b', 'c'), ('b', 'c', 'd'), ('c', 'd', 'e'), ('d', 'e', 'f')]
+
+print(list(gen_SlidingWindow([1, 2, 3, 4], 2)))
+# [(1, 2), (2, 3), (3, 4)]
+
+print(list(gen_SlidingWindow("abc", 5)))   # 窗口比数据还长
+# []
+
+print(list(gen_SlidingWindow([], 3)))      # 空输入
+# []
+
+print(list(gen_SlidingWindow("abc", 1)))  # n = 1
+# [('a',), ('b',), ('c',)] 
