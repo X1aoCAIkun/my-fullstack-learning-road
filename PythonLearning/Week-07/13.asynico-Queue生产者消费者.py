@@ -21,4 +21,4 @@ async def main():
     q = asyncio.Queue()
     await asyncio.gather(producer(q), consumer(q))
 
-asyncio.run(main())    
+asyncio.run(main())
