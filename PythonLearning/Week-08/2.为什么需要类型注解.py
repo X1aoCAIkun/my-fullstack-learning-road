@@ -13,7 +13,7 @@ add1("1", 2)         # TypeError
 def add2(a: int, b: int) -> int:
     return a + b
 
-add2("1", 2)   # 这里在输完 2 时就会有提示了
+add2(1, 2)   # 这里输完 "1" 后保存文件就会报错
 
 # 划重点：Python是 “动态类型” 语言，注解 “不会在运行时检查”（除非使用Pydantic / typeguard ）
 # 注解是给 “人和工具看的”

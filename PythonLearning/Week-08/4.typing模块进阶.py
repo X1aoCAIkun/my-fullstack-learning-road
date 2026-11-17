@@ -29,9 +29,9 @@ print(apply(lambda n: n * 2, 5))        # 10
 # 练习：写一个 parse_age(value: str | int) -> int，
 # 传字符串和整数都能解析，非数字字符串抛 ValueError。
 def parse_age(value: str | int) -> int:
-    if isinstance(value, int):
+    if isinstance(value, int):      # 注意：bool 是 int 的子类，所以传 bool 这里就会为真
         return value
-    if value.isdigit():     # 注意：bool被认为是字符串
+    if value.isdigit():    
         return int(value)
     raise ValueError(f"非法年龄：{value!r}")
 
