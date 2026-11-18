@@ -4,7 +4,7 @@
 
 import random
 from collections.abc import Callable
-from typing import Final, Generic, Literal, Protocol, NotRequired, TypedDict, TypeVar
+from typing import Final, Generic, Literal, NotRequired, Protocol, TypedDict, TypeVar
 
 # ============================================================
 # 第 1 组：基础类型注解（对应第 2、3 节）
@@ -193,7 +193,7 @@ b1: Book = {"title": "Python", "author": "tom", "price": 23.5}
 # 5.2 写函数 discount(book: Book, percent: float) -> Book：
 #     返回一个价格打折后的「新」Book（不要改原字典）
 def discount(book: Book, percent: float) -> Book:
-    return {**book, "price": book["price"] * percent}
+    return {**book, "price": book["price"] * percent}        # 先解包再赋新值
 
 print(discount(b1, 0.5))
 
