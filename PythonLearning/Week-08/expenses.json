@@ -1,0 +1,28 @@
+{
+  "expense": [
+    {
+      "id": 1,
+      "amount": 25.5,
+      "category": "food",
+      "note": "午饭",
+      "created_at": "2026-11-20T13:15:27.412488",
+      "discount": 0.0
+    },
+    {
+      "id": 2,
+      "amount": 4.0,
+      "category": "transport",
+      "note": "地铁",
+      "created_at": "2026-11-20T13:15:27.412509",
+      "discount": 1.0
+    },
+    {
+      "id": 3,
+      "amount": 89.0,
+      "category": "study",
+      "note": "买书",
+      "created_at": "2026-11-20T13:15:27.412513",
+      "discount": 0.0
+    }
+  ]
+}

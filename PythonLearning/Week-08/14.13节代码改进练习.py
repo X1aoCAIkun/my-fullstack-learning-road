@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class Task(BaseModel):
@@ -16,7 +16,7 @@ class Task(BaseModel):
     priority: Literal["low", "mid", "heigh"] = "mid"
     due: datetime | None = None
 
-    @field_validator(mode="after")      # 先检查之前的，再检查自定义的
+    @model_validator(mode="after")      # 先检查之前的，再检查自定义的
     def due_should_gt_created(self) -> "Task":
         if self.due and self.due <= self.created_at:
             raise ValueError(f"结束时间：{self.due} 早于创建时间：{self.created_at}")
@@ -27,7 +27,7 @@ class TaskList(BaseModel):
 
     def add(self, new_title: str) -> Task:
         new_id = max((t.id for t in self.tasks), default=0) + 1
-        t = Task(id=new_id, title=new_title, due=datetime.now)
+        t = Task(id=new_id, title=new_title, due=datetime.now())
         self.tasks.append(t)
         return t
 
