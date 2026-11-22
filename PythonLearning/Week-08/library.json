@@ -1,0 +1,28 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "python",
+      "isbn": "101",
+      "stock": 5,
+      "status": "available",
+      "borrowed_at": null
+    },
+    {
+      "id": 2,
+      "title": "java",
+      "isbn": "102",
+      "stock": 6,
+      "status": "available",
+      "borrowed_at": null
+    },
+    {
+      "id": 3,
+      "title": "c++",
+      "isbn": "103",
+      "stock": 7,
+      "status": "available",
+      "borrowed_at": null
+    }
+  ]
+}
