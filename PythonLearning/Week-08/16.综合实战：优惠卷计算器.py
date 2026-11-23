@@ -37,7 +37,9 @@ def pick_best(items: list[T], key: Callable[[T], float]) -> T | None:
 
 
 # d) 算价（第 4 节）
-def apply(coupon: Coupon, price: Money) -> Money:
+def apply(coupon: Coupon | None, price: Money) -> Money:
+    if coupon is None:
+        return price
     if coupon.kind == "percent":
         return price * (100 - coupon.value) * 0.01
     total = price - coupon.value
@@ -62,6 +64,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
 
-    pc: Coupon = pick_best(coupons, key=lambda c: apply(c, 100))
+    pc: Coupon | None = pick_best(coupons, key=lambda c: apply(c, 100))
     total: float = apply(pc, 100)
     print(f"卷：{pc}, 总价：{total}")

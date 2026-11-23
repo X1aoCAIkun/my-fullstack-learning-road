@@ -56,9 +56,7 @@ class Book(BaseModel):
         return new_book
 
 # d) 泛型仓库（第 5 节）
-class HasId(Protocol):
-    id: BookId
-T = TypeVar("T", bound=HasId)       # 限定 T 是 HasId 或其子类
+T = TypeVar("T", bound=Book)       # 限定 T 是 Book 或其子类
 
 class Repo(Generic[T]):
     def __init__(self) -> None:
@@ -179,7 +177,7 @@ if __name__ == "__main__":
     db = Path(__file__).parent / "library.json"
     lib.save(db)
     lib2 = Library.load(db)
-    assert lib.model_dump() == lib2.model_dump(), "存读结果不一致"
+    assert lib == lib2, "存读结果不一致"
     print("存读一致 ✓")
 
     # 5) 非法数据：title 全空格 / borrowed 但无借出时间 / stock=-1

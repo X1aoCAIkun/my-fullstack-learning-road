@@ -3,6 +3,7 @@
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+
 # 创建对象时自动校验元素是否合规，并且有校验器对 name 做进一步校验
 class User(BaseModel):              # 这样就像有了 dataclass
     id: int
