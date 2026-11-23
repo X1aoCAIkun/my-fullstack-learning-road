@@ -8,15 +8,17 @@ from pydantic import BaseModel, Field, ValidationError, field_validator, model_v
 
 #  a) 类型别名 + 常量（第 4、9 节）
 type BookId = int
-type FineRule = Callable[[int], float]          # 逾期天数，返回罚金
+type FineRule = Callable[[int], float]  # 逾期天数，返回罚金
 MAX_BORROW_DAYS: Final = 30
+
 
 # b) TypedDict 接外部数据（第 7 节）
 class RawBook(TypedDict):
     id: int
     title: str
-    isbn: str           # 国际标准图书号
+    isbn: str  # 国际标准图书号
     stock: int
+
 
 c_dict: RawBook = {"id": 1, "title": "Python 101", "isbn": "978-3-16-148410-0", "stock": 5}
 # e_dict: RawBook = {"id": 2, "title": "Python 102", "stock": 3}          # Missing key
@@ -24,6 +26,7 @@ c_dict: RawBook = {"id": 1, "title": "Python 101", "isbn": "978-3-16-148410-0", 
 # 外部数据为什么先用 TypedDict 接再转 Pydantic？（提示：TypedDict 在运行时是什么东西？）
 # TypeDict 是用 mypy做静态校验不会对运行有影响，这要没有校验成本
 # 再转为 Pydantic 模型，在运行时校验数据，区分原始不可信数据和校验完的数据
+
 
 # c) Pydantic 模型（第 12、14 节）
 class Book(BaseModel):
@@ -55,8 +58,10 @@ class Book(BaseModel):
         new_book: Book = Book(id=raw["id"], title=raw["title"], isbn=raw["isbn"], stock=raw["stock"])
         return new_book
 
+
 # d) 泛型仓库（第 5 节）
-T = TypeVar("T", bound=Book)       # 限定 T 是 Book 或其子类
+T = TypeVar("T", bound=Book)  # 限定 T 是 Book 或其子类
+
 
 class Repo(Generic[T]):
     def __init__(self) -> None:
@@ -74,30 +79,30 @@ class Repo(Generic[T]):
     def all(self) -> list[T]:
         return self._items
 
+
 # 思考题写进注释：get 的 id 写死 BookId 合理吗？想让 Repo 真正通用该怎么改？
 # （提示：第二个 TypeVar，或用一个带 id 属性的 Protocol 约束 T）
 # 不合理；给 bid 也用泛型
 
+
 # e) Protocol 导出器（第 6 节）
 class Exporter(Protocol):
-    def export(self, books: list[Book]) -> str:
-        ...
+    def export(self, books: list[Book]) -> str: ...
+
+
 class JsonExporter:
     def export(self, books: list[Book]) -> str:
-            return json.dumps(
-                [b.model_dump(mode="json") for b in books],
-                ensure_ascii=False,
-                indent=2
-            )
+        return json.dumps([b.model_dump(mode="json") for b in books], ensure_ascii=False, indent=2)
+
+
 class TextExporter:
     def export(self, books: list[Book]) -> str:
-        return "\n".join(
-            f"[{b.id}] {b.title} 库存：{b.stock} 状态：{b.status}" 
-            for b in books
-        )
+        return "\n".join(f"[{b.id}] {b.title} 库存：{b.stock} 状态：{b.status}" for b in books)
+
 
 def publish(exporter: Exporter, books: list[Book]) -> None:
     print(exporter.export(books))
+
 
 # f) 业务逻辑（第 4、13 节）
 class Library(BaseModel):
@@ -119,7 +124,7 @@ class Library(BaseModel):
                 b.stock += 1
                 date = b.borrowed_at
                 b.borrowed_at = None
-                if date is None:            # 这个解决的是 mypy 不知道 date 是不是 None
+                if date is None:  # 这个解决的是 mypy 不知道 date 是不是 None
                     return 0.0
                 delta = datetime.now() - date
                 if delta > timedelta(days=MAX_BORROW_DAYS):
@@ -138,12 +143,13 @@ class Library(BaseModel):
             return cls()
         return cls.model_validate_json(path.read_text(encoding="utf-8"))
 
+
 # g) 主流程（if __name__ == "__main__":）
 if __name__ == "__main__":
     rbs: list[RawBook] = [
         {"id": 1, "isbn": "101", "stock": 5, "title": "python"},
         {"id": 2, "isbn": "102", "stock": 6, "title": "java"},
-        {"id": 3, "isbn": "103", "stock": 7, "title": "c++"}            
+        {"id": 3, "isbn": "103", "stock": 7, "title": "c++"},
     ]
 
     bs: list[Book] = [Book.from_raw(rb) for rb in rbs]
@@ -160,12 +166,12 @@ if __name__ == "__main__":
     # 2) 模拟逾期：把借出时间往前拨，否则刚借的书永远不到 30 天
     for b in lib.books:
         if b.id == 1:
-            b.borrowed_at = datetime.now() - timedelta(days=40)   # 逾期 10 天
+            b.borrowed_at = datetime.now() - timedelta(days=40)  # 逾期 10 天
         if b.id == 2:
-            b.borrowed_at = datetime.now() - timedelta(days=35)   # 逾期 5 天
+            b.borrowed_at = datetime.now() - timedelta(days=35)  # 逾期 5 天
 
-    fine_default = lib.return_book(1)                                # 默认：逾期每天 0.5 元
-    fine_custom = lib.return_book(2, rule=lambda days: days * 2.0)   # 自定义：逾期每天 2 元
+    fine_default = lib.return_book(1)  # 默认：逾期每天 0.5 元
+    fine_custom = lib.return_book(2, rule=lambda days: days * 2.0)  # 自定义：逾期每天 2 元
     print(f"默认罚金：{fine_default}（预期 5.0）")
     print(f"自定义罚金：{fine_custom}（预期 10.0）")
 
