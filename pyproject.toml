@@ -1,0 +1,16 @@
+[tool.mypy]
+python_version = "3.14"
+strict = false                 # 全部最严格
+disallow_untyped_defs = true   # 函数必须写注解
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]  # 错误/未用/import 排序/升级语法/bugbear/简化
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+]
